@@ -1,11 +1,22 @@
 import logo from './logo.svg';
 import './App.css';
+import PitchDetector from "./PitchDetector";
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+    <div>
+      <h1>React Pitch Detector</h1>
+      <PitchDetector />
+    </div>
+  );
+};
+
+
+/* function app() {
+  return (
+    <div classname="app">
+      <header classname="app-header">
+        <img src={logo} classname="app-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
@@ -20,6 +31,6 @@ function App() {
       </header>
     </div>
   );
-}
+} */
 
 export default App;
