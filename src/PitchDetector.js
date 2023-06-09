@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { PitchDetector as pitchy} from "https://esm.sh/pitchy@4";
+import * as Pitchfinder from "pitchfinder";
 
 const PitchDetector = () => {
   const pitchRef = useRef(null);
@@ -9,25 +9,29 @@ const PitchDetector = () => {
     const audioContext = new window.AudioContext();
     const analyserNode = audioContext.createAnalyser();
 
-    const updatePitch = (analyserNode, detector, input, sampleRate) => {
-      analyserNode.getFloatTimeDomainData(input);
-      const [pitch, clarity] = detector.findPitch(input, sampleRate);
+    const updatePitch = (analyserNode, detector) => {
+      const bufferLength = 4096;
+      const float32Array = new Float32Array(bufferLength);
 
-      pitchRef.current.textContent = `${Math.round(pitch * 10) / 10} Hz`;
-      clarityRef.current.textContent = `${Math.round(clarity * 100)} %`;
+      analyserNode.getFloatTimeDomainData(float32Array);
 
-      window.setTimeout(
-        () => updatePitch(analyserNode, detector, input, sampleRate),
-        100
-      );
+      const detectPitch = Pitchfinder.YIN({sampleRate: audioContext.sampleRate});
+      const pitch = detectPitch(float32Array); // null if pitch cannot be identified
+
+      if (pitch !== null) {
+        pitchRef.current.textContent = `${Math.round(pitch)} Hz`;
+        clarityRef.current.textContent = "Pitch detected";
+      } else {
+        pitchRef.current.textContent = "No pitch detected";
+        clarityRef.current.textContent = "";
+      }
+
+      window.requestAnimationFrame(() => updatePitch(analyserNode, detector));
     };
 
     const handleStream = (stream) => {
       audioContext.createMediaStreamSource(stream).connect(analyserNode);
-      const detector = pitchy.forFloat32Array(analyserNode.fftSize);
-      const input = new Float32Array(detector.inputLength);
-
-      updatePitch(analyserNode, detector, input, audioContext.sampleRate);
+      updatePitch(analyserNode);
     };
 
     const handleResume = () => {
@@ -54,7 +58,7 @@ const PitchDetector = () => {
         Pitch: <span id="pitch" ref={pitchRef}></span>
       </div>
       <div>
-        Clarity: <span id="clarity" ref={clarityRef}></span>
+        <span id="clarity" ref={clarityRef}></span>
       </div>
       <button id="resume-button">Resume</button>
     </div>
