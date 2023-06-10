@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import * as Pitchfinder from "pitchfinder";
+import { useNoteDispatch, updateFrequency, useNote } from "./NoteContext";
 
 const PitchDetector = () => {
-  const pitchRef = useRef(null);
-  const clarityRef = useRef(null);
+  const noteDispatch = useNoteDispatch();
+  const note = useNote();
 
   useEffect(() => {
     const audioContext = new window.AudioContext();
@@ -15,17 +16,12 @@ const PitchDetector = () => {
 
       analyserNode.getFloatTimeDomainData(float32Array);
 
-      const detectPitch = Pitchfinder.YIN({sampleRate: audioContext.sampleRate});
-      const pitch = detectPitch(float32Array); // null if pitch cannot be identified
+      const detectPitch = Pitchfinder.YIN({ sampleRate: audioContext.sampleRate, probabilityThreshold: 0.9 });
+      const pitch = detectPitch(float32Array); 
 
       if (pitch !== null) {
-        pitchRef.current.textContent = `${Math.round(pitch)} Hz`;
-        clarityRef.current.textContent = "Pitch detected";
-      } else {
-        pitchRef.current.textContent = "No pitch detected";
-        clarityRef.current.textContent = "";
-      }
-
+        noteDispatch(updateFrequency(pitch)); 
+      } 
       window.requestAnimationFrame(() => updatePitch(analyserNode, detector));
     };
 
@@ -45,21 +41,15 @@ const PitchDetector = () => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(handleStream);
 
     return () => {
-      // Cleanup code, remove event listeners or perform any necessary cleanup.
       document
         .getElementById("resume-button")
         .removeEventListener("click", handleResume);
     };
-  }, []);
+  }, [noteDispatch]);
 
   return (
     <div>
-      <div>
-        Pitch: <span id="pitch" ref={pitchRef}></span>
-      </div>
-      <div>
-        <span id="clarity" ref={clarityRef}></span>
-      </div>
+      Note name: <span>{note.name}</span>
       <button id="resume-button">Resume</button>
     </div>
   );
