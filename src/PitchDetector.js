@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as Pitchfinder from "pitchfinder";
 import { useNoteDispatch, updateFrequency, useNote } from "./NoteContext";
 
 const PitchDetector = () => {
   const noteDispatch = useNoteDispatch();
   const note = useNote();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const audioContext = new window.AudioContext();
@@ -38,7 +39,11 @@ const PitchDetector = () => {
       .getElementById("resume-button")
       .addEventListener("click", handleResume);
 
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(handleStream);
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(handleStream)
+      .catch((_) => {
+        setError("Error: Could not get audio stream from microphone");
+      });
 
     return () => {
       document
@@ -49,8 +54,13 @@ const PitchDetector = () => {
 
   return (
     <div>
-      Note name: <span>{note.name}</span>
-      <button id="resume-button">Resume</button>
+      {error && <div>{error}</div>}
+      {!error && (
+        <>
+          Note name: <span>{note.name}</span>
+          <button id="resume-button">Resume</button>
+        </>
+      )}
     </div>
   );
 };
