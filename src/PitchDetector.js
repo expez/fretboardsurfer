@@ -20,16 +20,24 @@ const PitchDetector = () => {
       return rms;
     };
 
+    const calculateBufferLength = (sampleRate) => {
+      const baseBufferLength = 4096;
+      const baseSampleRate = 44100;
+      const bufferLength = Math.round((sampleRate / baseSampleRate) * baseBufferLength);
+      return bufferLength;
+    };
+
     const updatePitch = (analyserNode, detector) => {
-      const bufferLength = 4096;
+      const sampleRate = audioContext.sampleRate;
+      const bufferLength = calculateBufferLength(sampleRate);
       const float32Array = new Float32Array(bufferLength);
+
       analyserNode.getFloatTimeDomainData(float32Array);
 
       const rms = calculateRMS(float32Array);
 
-      // Only update the pitch if the RMS is above a certain threshold
       if (rms > 0.11) {
-        const detectPitch = Pitchfinder.YIN({ sampleRate: audioContext.sampleRate, probabilityThreshold: 0.9 });
+        const detectPitch = Pitchfinder.YIN({ sampleRate: sampleRate, probabilityThreshold: 0.9 });
         const pitch = detectPitch(float32Array);
 
         if (pitch !== null) {
