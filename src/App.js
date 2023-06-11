@@ -6,10 +6,9 @@ import Question from './Question';
 
 const App = () => {
   return (
-    <div>
+    <div className='app'>
       <QuestionProvider>
           <NoteProvider>
-            <h1>Fretboard surfer</h1>
             <Question />
             <PitchDetector />
           </NoteProvider>
