@@ -8,11 +8,11 @@ const App = () => {
   return (
     <div>
       <QuestionProvider>
-        <NoteProvider>
-          <h1>Fretboard surfer</h1>
-          <Question/>
-          <PitchDetector />
-        </NoteProvider>
+          <NoteProvider>
+            <h1>Fretboard surfer</h1>
+            <Question />
+            <PitchDetector />
+          </NoteProvider>
       </QuestionProvider>
     </div>
   );

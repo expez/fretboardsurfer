@@ -9,16 +9,16 @@ const notes = [
 const stringPositions = ["U", "M", "L"];
 
 const getRandomNote = () => {
-  return notes[Math.floor(Math.random() * notes.length)];
+    return notes[Math.floor(Math.random() * notes.length)];
 };
 
 const generateNotes = () => {
-  const randomNotes = [];
-  for (let i = 0; i < 10; i++) {
-    const randomNote = getRandomNote();
-    randomNotes.push(randomNote);
-  }
-  return randomNotes;
+    const randomNotes = [];
+    for (let i = 0; i < 10; i++) {
+        const randomNote = getRandomNote();
+        randomNotes.push(randomNote);
+    }
+    return randomNotes;
 };
 
 const makeQuestion = (fretboardPosition, stringPosition, randomNotes) => {
@@ -40,25 +40,29 @@ const generateQuestion = () => {
 const initialState = generateQuestion();
 
 const answerQuestion = (noteNames) => {
-  const newNote = getRandomNote();
-  noteNames.shift();
-  noteNames.push(newNote);
-  return noteNames;
+    const newNote = getRandomNote();
+    noteNames.shift();
+    noteNames.push(newNote);
+    return noteNames;
 };
 
 const reducer = (state, action) => {
-  switch (action.type) {
-    case "GENERATE_QUESTION":
-      return generateQuestion();
-    case "ANSWER_QUESTION":
-      return {
-        ...state,
-        createdAt: Date.now(),
-        noteNames: answerQuestion(state.noteNames)
-      };
-    default:
-      throw new Error(`Unhandled action type: ${action.type}`);
-  }
+    switch (action.type) {
+        case "GENERATE_QUESTION":
+            return generateQuestion();
+        case "ANSWER_QUESTION":
+            if (action.payload.isCorrect) {
+                return {
+                    ...state,
+                    createdAt: Date.now(),
+                    noteNames: answerQuestion(state.noteNames)
+                };
+            } else {
+                return state;
+            }
+        default:
+            throw new Error(`Unhandled action type: ${action.type}`);
+    }
 };
 
 const QuestionProvider = ({ children }) => {
@@ -93,4 +97,11 @@ const generateNewQuestion = () => {
     return { type: "GENERATE_QUESTION" }
 };
 
-export { QuestionProvider, useQuestion, useQuestionDispatch };
+const correctAnswer = (question, answer) => {
+    return { type: "ANSWER_QUESTION", payload: { isCorrect: true } }
+}
+
+const wrongAnswer = (question, answer) => {
+    return { type: "ANSWER_QUESTION", payload: { isCorrect: false } }   
+}
+export { QuestionProvider, useQuestion, useQuestionDispatch, generateNewQuestion, correctAnswer, wrongAnswer};

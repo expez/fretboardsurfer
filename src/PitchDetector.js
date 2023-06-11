@@ -1,15 +1,42 @@
 import React, { useEffect, useState } from "react";
 import * as Pitchfinder from "pitchfinder";
 import { useNoteDispatch, updateFrequency, useNote } from "./NoteContext";
+import { useQuestionDispatch, useQuestion, correctAnswer, wrongAnswer} from "./QuestionContext";
+import * as Tone from 'tone'
+
+const getNoteName = (frequency) => {
+    const noteName = Tone.Frequency(frequency).toNote().replace(/\d/g, '');
+    return noteName;
+}
+
+const isEnharmonic = (noteName1, noteName2) => {  
+    const enharmonicNotes = {
+        'C#': 'Db',
+        'Db': 'C#',
+        'D#': 'Eb',
+        'Eb': 'D#',
+        'F#': 'Gb',
+        'Gb': 'F#',
+        'G#': 'Ab',
+        'Ab': 'G#',
+        'A#': 'Bb',
+        'Bb': 'A#',
+    };
+    return enharmonicNotes[noteName1] === noteName2;
+}
+
+const isCorrect = (question, answer) => {
+  const correctAnswer = question.noteNames[0];
+  console.log(correctAnswer, answer);
+    return correctAnswer === answer || isEnharmonic(correctAnswer, answer);
+};
 
 const PitchDetector = () => {
   const noteDispatch = useNoteDispatch();
   const note = useNote();
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const audioContext = new window.AudioContext();
-    const analyserNode = audioContext.createAnalyser();
+  const question = useQuestion();
+  const questionDispatch = useQuestionDispatch();
 
     const calculateRMS = (buffer) => {
       let rms = 0;
@@ -27,6 +54,11 @@ const PitchDetector = () => {
       return bufferLength;
     };
 
+
+  useEffect(() => {
+    const audioContext = new window.AudioContext();
+    const analyserNode = audioContext.createAnalyser();
+
     const updatePitch = (analyserNode, detector) => {
       const sampleRate = audioContext.sampleRate;
       const bufferLength = calculateBufferLength(sampleRate);
@@ -42,6 +74,13 @@ const PitchDetector = () => {
 
         if (pitch !== null) {
           noteDispatch(updateFrequency(pitch));
+          const noteName = getNoteName(pitch);
+          console.log(noteName);
+          if (isCorrect(question, noteName)) {
+            questionDispatch(correctAnswer());    
+          } else {
+            questionDispatch(wrongAnswer());
+          } 
         }
       }
 
@@ -72,7 +111,7 @@ const PitchDetector = () => {
         .getElementById("resume-button")
         .removeEventListener("click", handleResume);
     };
-  }, [noteDispatch]);
+  });
 
   return (
     <div>
