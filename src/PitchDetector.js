@@ -79,7 +79,7 @@ const PitchDetector = () => {
       {error && <div>{error}</div>}
       {!error && (
         <>
-          Note name: <span>{note.name}</span>
+          Note name: <span>{note.name}</span><br/>
           <button id="resume-button">Resume</button>
         </>
       )}
