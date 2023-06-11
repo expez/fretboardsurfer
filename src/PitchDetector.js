@@ -11,18 +11,32 @@ const PitchDetector = () => {
     const audioContext = new window.AudioContext();
     const analyserNode = audioContext.createAnalyser();
 
+    const calculateRMS = (buffer) => {
+      let rms = 0;
+      for (let i = 0; i < buffer.length; i++) {
+        rms += buffer[i] ** 2;
+      }
+      rms = Math.sqrt(rms / buffer.length);
+      return rms;
+    };
+
     const updatePitch = (analyserNode, detector) => {
       const bufferLength = 4096;
       const float32Array = new Float32Array(bufferLength);
-
       analyserNode.getFloatTimeDomainData(float32Array);
 
-      const detectPitch = Pitchfinder.YIN({ sampleRate: audioContext.sampleRate, probabilityThreshold: 0.9 });
-      const pitch = detectPitch(float32Array); 
+      const rms = calculateRMS(float32Array);
 
-      if (pitch !== null) {
-        noteDispatch(updateFrequency(pitch)); 
-      } 
+      // Only update the pitch if the RMS is above a certain threshold
+      if (rms > 0.11) {
+        const detectPitch = Pitchfinder.YIN({ sampleRate: audioContext.sampleRate, probabilityThreshold: 0.9 });
+        const pitch = detectPitch(float32Array);
+
+        if (pitch !== null) {
+          noteDispatch(updateFrequency(pitch));
+        }
+      }
+
       window.requestAnimationFrame(() => updatePitch(analyserNode, detector));
     };
 
