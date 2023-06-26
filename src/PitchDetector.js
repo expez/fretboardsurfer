@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import * as Pitchfinder from "pitchfinder";
-import { useNoteDispatch, updateFrequency, useNote } from "./NoteContext";
+import { useNoteDispatch, updateFrequency } from "./NoteContext";
 import { useQuestionDispatch, useQuestion, correctAnswer, wrongAnswer} from "./QuestionContext";
 import * as Tone from 'tone'
 
@@ -33,10 +33,10 @@ const isCorrect = (question, answer) => {
 
 const PitchDetector = () => {
   const noteDispatch = useNoteDispatch();
-  const note = useNote();
   const [error, setError] = useState(null);
   const question = useQuestion();
   const questionDispatch = useQuestionDispatch();
+  const [buttonClicked, setButtonClicked] = useState(false);
 
     const calculateRMS = (buffer) => {
       let rms = 0;
@@ -91,8 +91,23 @@ const PitchDetector = () => {
       updatePitch(analyserNode);
     };
 
-    const handleResume = () => {
+    const handleGo = () => {
       audioContext.resume();
+      setButtonClicked(true);
+    };
+
+    const addGoButtonListener = () => {
+      const button = document.getElementById("go-button");
+      if (button) {
+        button.addEventListener("click", handleGo);
+      }
+    };
+
+    const removeGoButtonListener = () => {
+      const button = document.getElementById("go-button");
+      if (button) {
+        button.removeEventListener("click", handleGo);
+      }
     };
 
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -101,24 +116,18 @@ const PitchDetector = () => {
         setError("Error: Could not get audio stream from microphone");
       });
 
-    document
-      .getElementById("resume-button")
-      .addEventListener("click", handleResume);
+    addGoButtonListener();
 
-    return () => {
-      document
-        .getElementById("resume-button")
-        .removeEventListener("click", handleResume);
-    };
+    return removeGoButtonListener;
   });
 
   return (
     <div>
-      {error && <div>{error}</div>}
-      {!error && (
-        <>
-          <button id="resume-button" className="go-button">Go</button>
-        </>
+        {error && <div>{error}</div>}
+        {!error && !buttonClicked && (
+          <>
+            <button id="go-button" className="go-button" >Go</button>
+          </>
       )}
     </div>
   );

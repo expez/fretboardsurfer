@@ -12,7 +12,7 @@ const App = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(() => setMicPermission(true))
       .catch(() => setMicPermission(false));
-  }, []); 
+  }, []);
 
   if (!micPermission) {
     return (
@@ -26,8 +26,8 @@ const App = () => {
     <div className='app'>
       <QuestionProvider>
           <NoteProvider>
-            <Question />
-            <PitchDetector />
+            <Question/>
+            <PitchDetector/>
           </NoteProvider>
       </QuestionProvider>
     </div>
