@@ -9,7 +9,7 @@ const getNoteName = (frequency) => {
     return noteName;
 }
 
-const isEnharmonic = (noteName1, noteName2) => {  
+const isEnharmonic = (noteName1, noteName2) => {
     const enharmonicNotes = {
         'C#': 'Db',
         'Db': 'C#',
@@ -75,12 +75,11 @@ const PitchDetector = () => {
         if (pitch !== null) {
           noteDispatch(updateFrequency(pitch));
           const noteName = getNoteName(pitch);
-          console.log(noteName);
           if (isCorrect(question, noteName)) {
-            questionDispatch(correctAnswer());    
+            questionDispatch(correctAnswer());
           } else {
             questionDispatch(wrongAnswer());
-          } 
+          }
         }
       }
 
@@ -96,15 +95,15 @@ const PitchDetector = () => {
       audioContext.resume();
     };
 
-    document
-      .getElementById("resume-button")
-      .addEventListener("click", handleResume);
-
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(handleStream)
       .catch((_) => {
         setError("Error: Could not get audio stream from microphone");
       });
+
+    document
+      .getElementById("resume-button")
+      .addEventListener("click", handleResume);
 
     return () => {
       document
@@ -118,8 +117,7 @@ const PitchDetector = () => {
       {error && <div>{error}</div>}
       {!error && (
         <>
-          Note name: <span>{note.name}</span><br/>
-          <button id="resume-button">Resume</button>
+          <button id="resume-button" className="go-button">Go</button>
         </>
       )}
     </div>

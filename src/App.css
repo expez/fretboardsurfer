@@ -37,3 +37,18 @@
   font-size: 1.5em;
   margin-top: 2em;
 }
+
+.go-button {
+  background-color: #268bd2;
+  color: #fdf6e3;
+  font-size: 1.5em;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 0.25em;
+  cursor: pointer;
+  margin-top: 2em;
+}
+
+.go-button:hover {
+  background-color: #6c71c4;
+}
