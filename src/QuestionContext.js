@@ -8,6 +8,28 @@ const notes = [
 ];
 const stringPositions = ["U", "M", "L"];
 
+const isEnharmonic = (noteName1, noteName2) => {
+    const enharmonicNotes = {
+        'C#': 'Db',
+        'Db': 'C#',
+        'D#': 'Eb',
+        'Eb': 'D#',
+        'F#': 'Gb',
+        'Gb': 'F#',
+        'G#': 'Ab',
+        'Ab': 'G#',
+        'A#': 'Bb',
+        'Bb': 'A#',
+    };
+    return enharmonicNotes[noteName1] === noteName2;
+}
+
+const isCorrect = (question, answer) => {
+  const correctAnswer = question.noteNames[0];
+    return correctAnswer === answer || isEnharmonic(correctAnswer, answer);
+};
+
+
 const getRandomNote = () => {
     return notes[Math.floor(Math.random() * notes.length)];
 };
@@ -102,6 +124,6 @@ const correctAnswer = (question, answer) => {
 }
 
 const wrongAnswer = (question, answer) => {
-    return { type: "ANSWER_QUESTION", payload: { isCorrect: false } }   
+    return { type: "ANSWER_QUESTION", payload: { isCorrect: false } }
 }
-export { QuestionProvider, useQuestion, useQuestionDispatch, generateNewQuestion, correctAnswer, wrongAnswer};
+export { QuestionProvider, useQuestion, useQuestionDispatch, generateNewQuestion, correctAnswer, isCorrect, wrongAnswer};

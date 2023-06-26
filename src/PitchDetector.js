@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import * as Pitchfinder from "pitchfinder";
 import { useNoteDispatch, updateFrequency } from "./NoteContext";
-import { useQuestionDispatch, useQuestion, correctAnswer, wrongAnswer} from "./QuestionContext";
+import { useQuestionDispatch, useQuestion, correctAnswer, wrongAnswer, isCorrect} from "./QuestionContext";
 import * as Tone from 'tone'
 
 const getNoteName = (frequency) => {
@@ -9,34 +9,13 @@ const getNoteName = (frequency) => {
     return noteName;
 }
 
-const isEnharmonic = (noteName1, noteName2) => {
-    const enharmonicNotes = {
-        'C#': 'Db',
-        'Db': 'C#',
-        'D#': 'Eb',
-        'Eb': 'D#',
-        'F#': 'Gb',
-        'Gb': 'F#',
-        'G#': 'Ab',
-        'Ab': 'G#',
-        'A#': 'Bb',
-        'Bb': 'A#',
-    };
-    return enharmonicNotes[noteName1] === noteName2;
-}
-
-const isCorrect = (question, answer) => {
-  const correctAnswer = question.noteNames[0];
-  console.log(correctAnswer, answer);
-    return correctAnswer === answer || isEnharmonic(correctAnswer, answer);
-};
-
 const PitchDetector = () => {
   const noteDispatch = useNoteDispatch();
   const [error, setError] = useState(null);
   const question = useQuestion();
   const questionDispatch = useQuestionDispatch();
   const [buttonClicked, setButtonClicked] = useState(false);
+  const [inputDeviceName, setinputDeviceName] = useState(null);
 
     const calculateRMS = (buffer) => {
       let rms = 0;
@@ -67,11 +46,9 @@ const PitchDetector = () => {
       analyserNode.getFloatTimeDomainData(float32Array);
 
       const rms = calculateRMS(float32Array);
-
       if (rms > 0.11) {
         const detectPitch = Pitchfinder.YIN({ sampleRate: sampleRate, probabilityThreshold: 0.9 });
         const pitch = detectPitch(float32Array);
-
         if (pitch !== null) {
           noteDispatch(updateFrequency(pitch));
           const noteName = getNoteName(pitch);
@@ -89,10 +66,23 @@ const PitchDetector = () => {
     const handleStream = (stream) => {
       audioContext.createMediaStreamSource(stream).connect(analyserNode);
       updatePitch(analyserNode);
+      if(!inputDeviceName) {
+          navigator.mediaDevices.enumerateDevices()
+          .then((devices) => {
+            const audioDevice = devices.find((device) => device.deviceId === stream.getAudioTracks()[0].getSettings().deviceId);
+            if (audioDevice) {
+              setinputDeviceName(audioDevice.label);
+            }
+          })
+          .catch((_) => {
+            console.log("Error: Could not enumerate audio devices");
+          });
+        }
     };
 
     const handleGo = () => {
       audioContext.resume();
+      console.log("inputDeviceName", inputDeviceName);
       setButtonClicked(true);
     };
 
@@ -115,6 +105,7 @@ const PitchDetector = () => {
       .catch((_) => {
         setError("Error: Could not get audio stream from microphone");
       });
+
 
     addGoButtonListener();
 
