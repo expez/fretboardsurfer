@@ -31,3 +31,9 @@
   align-items: center;
   justify-content: center;
 }
+
+.error-message {
+  color: #dc322f;
+  font-size: 1.5em;
+  margin-top: 2em;
+}
